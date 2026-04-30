@@ -10,12 +10,8 @@ const PRECACHE_RESOURCES = [
   '/',
   '/index.html',
   '/offline.html',
-  '/src/main.ts',
-  '/src/style.css',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  '/icons/favicon.ico'
+  '/vite.svg'
 ];
 
 const SCENARIO_CACHE_TTL = 86400000; // 24 hours
@@ -261,8 +257,8 @@ self.addEventListener('push', (event) => {
   
   const options = {
     body: data.body || 'Flight Control System notification',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: '/vite.svg',
+    badge: '/vite.svg',
     data: {
       url: data.url || '/'
     },

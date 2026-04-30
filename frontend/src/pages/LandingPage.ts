@@ -145,8 +145,36 @@ export class LandingPage extends Component {
   }
 
   render() {
+    // SEO Meta Tags will be injected by the router
+    document.title = 'Airport Operations Simulator | Realistic Airport Management Training';
+    
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Experience real airport operations. Master air traffic control, emergency management, passenger services, and airport security with our realistic training simulator.');
+    }
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) {
+      ogTitle.setAttribute('content', 'Airport Operations Simulator | Realistic Airport Management Training');
+    }
+
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    if (ogDescription) {
+      ogDescription.setAttribute('content', 'Experience real airport operations. Master air traffic control, emergency management, passenger services, and airport security with our realistic training simulator.');
+    }
+
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) {
+      ogUrl.setAttribute('content', 'https://github.com/PhillipC05/tpt-flight-control');
+    }
+
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute('href', 'https://github.com/PhillipC05/tpt-flight-control');
+    }
+
     return `
-      <div class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <div class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900" itemscope itemtype="https://schema.org/SoftwareApplication">
         <!-- Navigation -->
         <nav class="bg-black/20 backdrop-blur-sm border-b border-white/10">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -171,14 +199,16 @@ export class LandingPage extends Component {
 
         <!-- Hero Section -->
         <section class="relative py-20 px-4 sm:px-6 lg:px-8">
-          <div class="max-w-7xl mx-auto text-center">
-            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6">
-              Experience Airport
-              <span class="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                Operations
-              </span>
-            </h1>
-            <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+            <div class="max-w-7xl mx-auto text-center">
+              <h1 itemprop="name" class="text-5xl md:text-7xl font-bold text-white mb-6">
+                Experience Airport
+                <span class="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                  Operations
+                </span>
+              </h1>
+              <meta itemprop="applicationCategory" content="Simulation, Training, Education">
+              <meta itemprop="operatingSystem" content="Web Browser">
+            <p itemprop="description" class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Step into the heart of airport operations. Manage flights, coordinate teams,
               handle emergencies, and keep passengers moving in this realistic airport simulator
               powered by actual operational software.
@@ -296,15 +326,23 @@ export class LandingPage extends Component {
                 </p>
               </div>
 
-              <div>
-                <h4 class="text-white font-semibold mb-4">Features</h4>
-                <ul class="space-y-2 text-gray-400 text-sm">
-                  <li>Real-time Operations</li>
-                  <li>Emergency Management</li>
-                  <li>Team Coordination</li>
-                  <li>Performance Analytics</li>
-                </ul>
-              </div>
+               <div>
+                 <h4 class="text-white font-semibold mb-4">Features</h4>
+                 <ul class="space-y-2 text-gray-400 text-sm">
+                   <li>Real-time Operations</li>
+                   <li>Emergency Management</li>
+                   <li>Team Coordination</li>
+                   <li>Performance Analytics</li>
+                 </ul>
+               </div>
+
+               <div>
+                 <h4 class="text-white font-semibold mb-4">Pillars</h4>
+                 <ul class="space-y-2 text-gray-400 text-sm">
+                   <li><a href="/pillars/operations" class="hover:text-blue-400 transition-colors" rel="noopener">Airport Operations</a></li>
+                   <li><a href="/pillars/safety" class="hover:text-blue-400 transition-colors" rel="noopener">Safety & Emergency</a></li>
+                 </ul>
+               </div>
 
               <div>
                 <h4 class="text-white font-semibold mb-4">Roles</h4>

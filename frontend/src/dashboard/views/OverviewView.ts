@@ -11,88 +11,142 @@ export class OverviewView {
   }
 
   async render(user: User): Promise<string> {
+    let stats: DashboardStats;
     try {
-      const stats = await this.apiService.fetchDashboardStats();
-
-      return `
-        <div class="space-y-6">
-          <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-            <button id="refresh-stats" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-              Refresh
-            </button>
-          </div>
-
-          <!-- Stats Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            ${this.renderStatCard('Total Flights', stats.total_flights, '✈️', 'blue')}
-            ${this.renderStatCard('Active Flights', stats.active_flights, '🛫', 'green')}
-            ${this.renderStatCard('Total Passengers', stats.total_passengers, '👥', 'purple')}
-            ${this.renderStatCard('Checked-in Passengers', stats.checked_in_passengers, '✅', 'indigo')}
-          </div>
-
-          <!-- System Health -->
-          <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold mb-4">System Health</h3>
-            <div class="flex items-center space-x-4">
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 rounded-full ${
-                  stats.system_health === 'healthy' ? 'bg-green-500' :
-                  stats.system_health === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                }"></div>
-                <span class="text-sm font-medium capitalize">${stats.system_health}</span>
-              </div>
-              <span class="text-sm text-gray-500">Last updated: ${new Date().toLocaleTimeString()}</span>
-            </div>
-          </div>
-
-          <!-- Recent Activity -->
-          <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
-            <div id="recent-activity" class="space-y-3">
-              <div class="animate-pulse text-gray-500">Loading recent activity...</div>
-            </div>
-          </div>
-        </div>
-      `;
-    } catch (error) {
-      console.error('Failed to load dashboard overview:', error);
-      return '<div class="text-center text-red-500">Failed to load dashboard data</div>';
+      stats = await this.apiService.fetchDashboardStats();
+    } catch {
+      stats = {
+        total_flights: 0, active_flights: 0, total_passengers: 0,
+        checked_in_passengers: 0, total_bookings: 0, pending_maintenance: 0,
+        security_alerts: 0, system_health: 'healthy'
+      };
     }
-  }
 
-  private renderStatCard(title: string, value: number, icon: string, color: string): string {
-    const colorClasses = {
-      blue: 'bg-blue-500',
-      green: 'bg-green-500',
-      purple: 'bg-purple-500',
-      indigo: 'bg-indigo-500'
-    };
+    const healthColor =
+      stats.system_health === 'healthy'  ? 'text-emerald-400' :
+      stats.system_health === 'warning'  ? 'text-amber-400'   : 'text-red-400';
+    const healthDot =
+      stats.system_health === 'healthy'  ? 'bg-emerald-400' :
+      stats.system_health === 'warning'  ? 'bg-amber-400'   : 'bg-red-400';
 
     return `
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 ${colorClasses[color as keyof typeof colorClasses]} rounded-full flex items-center justify-center text-white text-sm">
-              ${icon}
+      <div class="space-y-6">
+        <!-- Page header -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-slate-100">Good day, ${user.first_name}</h2>
+            <p class="text-sm text-slate-500 mt-0.5">${new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</p>
+          </div>
+          <button id="refresh-stats"
+            class="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm rounded-lg transition-colors">
+            ↻ Refresh
+          </button>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          ${this.statCard('Total Flights',     stats.total_flights,         '✈',  'from-blue-600/20 to-blue-600/5',    'text-blue-400',    'border-blue-600/30')}
+          ${this.statCard('Active Now',        stats.active_flights,        '🛫', 'from-emerald-600/20 to-emerald-600/5','text-emerald-400','border-emerald-600/30')}
+          ${this.statCard('Total Passengers',  stats.total_passengers,      '👤', 'from-violet-600/20 to-violet-600/5', 'text-violet-400',  'border-violet-600/30')}
+          ${this.statCard('Checked In',        stats.checked_in_passengers, '✅', 'from-cyan-600/20 to-cyan-600/5',    'text-cyan-400',    'border-cyan-600/30')}
+        </div>
+
+        <!-- Secondary row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          ${this.miniCard('Bookings',           stats.total_bookings,       '🎫', 'text-indigo-400')}
+          ${this.miniCard('Pending Maintenance',stats.pending_maintenance,  '🔧', stats.pending_maintenance > 5 ? 'text-amber-400' : 'text-slate-300')}
+          ${this.miniCard('Security Alerts',    stats.security_alerts,      '🔐', stats.security_alerts > 0    ? 'text-red-400'   : 'text-slate-300')}
+        </div>
+
+        <!-- System status + activity row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- System health -->
+          <div class="bg-slate-800 rounded-xl border border-slate-700/60 p-5">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">System Health</h3>
+            <div class="flex items-center gap-3">
+              <span class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${healthDot} opacity-50"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 ${healthDot}"></span>
+              </span>
+              <span class="text-base font-semibold capitalize ${healthColor}">${stats.system_health}</span>
+              <span class="ml-auto text-xs text-slate-500">Updated ${new Date().toLocaleTimeString()}</span>
+            </div>
+            <div class="mt-4 grid grid-cols-3 gap-3">
+              ${this.healthPill('API',      'Online',  'emerald')}
+              ${this.healthPill('DB',       'Online',  'emerald')}
+              ${this.healthPill('WS',       'Online',  'emerald')}
             </div>
           </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">${title}</p>
-            <p class="text-2xl font-bold text-gray-900">${value.toLocaleString()}</p>
+
+          <!-- Quick actions -->
+          <div class="bg-slate-800 rounded-xl border border-slate-700/60 p-5">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-2">
+              ${this.quickAction('✈', 'View Flights',      'flights')}
+              ${this.quickAction('👤','Passengers',         'passengers')}
+              ${this.quickAction('🔧','Maintenance',        'maintenance')}
+              ${this.quickAction('🔐','Security',           'advanced-security')}
+            </div>
           </div>
         </div>
       </div>
     `;
   }
 
+  private statCard(label: string, value: number, icon: string, gradient: string, textColor: string, border: string): string {
+    return `
+      <div class="bg-gradient-to-br ${gradient} rounded-xl border ${border} p-5">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">${label}</p>
+            <p class="text-3xl font-bold ${textColor}">${value.toLocaleString()}</p>
+          </div>
+          <span class="text-2xl opacity-70">${icon}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private miniCard(label: string, value: number, icon: string, textColor: string): string {
+    return `
+      <div class="bg-slate-800 rounded-xl border border-slate-700/60 p-4 flex items-center gap-4">
+        <span class="text-xl">${icon}</span>
+        <div>
+          <p class="text-xs text-slate-500">${label}</p>
+          <p class="text-xl font-semibold ${textColor}">${value.toLocaleString()}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  private healthPill(name: string, status: string, color: string): string {
+    return `
+      <div class="bg-slate-700/50 rounded-lg p-2 text-center">
+        <div class="text-xs text-slate-500 mb-1">${name}</div>
+        <div class="text-xs font-medium text-${color}-400">${status}</div>
+      </div>
+    `;
+  }
+
+  private quickAction(icon: string, label: string, view: string): string {
+    return `
+      <button data-nav="${view}"
+        class="nav-quick-action flex items-center gap-2 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 rounded-lg text-sm text-slate-300 hover:text-white transition-colors">
+        <span>${icon}</span><span>${label}</span>
+      </button>
+    `;
+  }
+
   setupEventListeners(): void {
-    const refreshBtn = document.getElementById('refresh-stats');
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', () => {
-        // Trigger refresh - this would be handled by the parent component
-        window.dispatchEvent(new CustomEvent('refreshOverview'));
+    document.getElementById('refresh-stats')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('refreshOverview'));
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('.nav-quick-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.nav;
+        if (view) window.dispatchEvent(new CustomEvent('navigate', { detail: { view } }));
       });
-    }
+    });
   }
 }

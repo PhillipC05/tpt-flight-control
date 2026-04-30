@@ -73,16 +73,16 @@ export class DashboardManager {
   async render() {
     const user = this.auth.getUser();
     if (!user) {
-      this.container.innerHTML = '<div class="text-center text-red-500">Authentication required</div>';
+      this.container.innerHTML = '<div class="min-h-screen bg-slate-950 flex items-center justify-center text-red-400">Authentication required</div>';
       return;
     }
 
     this.container.innerHTML = `
-      <div class="min-h-screen bg-gray-50">
+      <div class="min-h-screen bg-slate-950 flex flex-col">
         ${this.header.render(user)}
-        <div class="flex">
+        <div class="flex flex-1 overflow-hidden">
           ${this.sidebar.render(user)}
-          <main class="flex-1 p-6">
+          <main class="flex-1 overflow-y-auto p-6 bg-slate-950">
             <div id="dashboard-content">
               ${await this.renderContent(user)}
             </div>

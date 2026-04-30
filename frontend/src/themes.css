@@ -1,0 +1,284 @@
+/* ═══════════════════════════════════════════════════
+   Flight Control — Theme System
+   data-theme on <html> drives all three themes.
+   ═══════════════════════════════════════════════════ */
+
+/* ── Mission Control (default) — glassmorphism / deep space ── */
+:root,
+[data-theme="mission-control"] {
+  --fc-page-bg:        #060a12;
+  --fc-surface:        rgba(255,255,255,0.05);
+  --fc-surface-hover:  rgba(255,255,255,0.08);
+  --fc-surface-active: rgba(129,140,248,0.12);
+  --fc-sidebar-bg:     rgba(6,10,18,0.80);
+  --fc-header-bg:      rgba(6,10,18,0.70);
+  --fc-border:         rgba(255,255,255,0.08);
+  --fc-border-hover:   rgba(129,140,248,0.55);
+  --fc-text-primary:   #f1f5f9;
+  --fc-text-secondary: #94a3b8;
+  --fc-text-muted:     #475569;
+  --fc-accent:         #818cf8;
+  --fc-accent-dim:     rgba(129,140,248,0.14);
+  --fc-blur:           blur(16px);
+  --fc-radius:         14px;
+  --fc-shadow:         0 4px 24px rgba(0,0,0,0.45);
+  --fc-glow-blue:      0 0 24px rgba(59,130,246,0.22);
+  --fc-glow-green:     0 0 24px rgba(16,185,129,0.22);
+  --fc-glow-purple:    0 0 24px rgba(139,92,246,0.22);
+  --fc-glow-cyan:      0 0 24px rgba(6,182,212,0.22);
+  --fc-glow-amber:     0 0 24px rgba(245,158,11,0.22);
+}
+
+/* ── Monochrome Pro — pure black / flat ── */
+[data-theme="monochrome-pro"] {
+  --fc-page-bg:        #000000;
+  --fc-surface:        #0a0a0a;
+  --fc-surface-hover:  #111111;
+  --fc-surface-active: #161616;
+  --fc-sidebar-bg:     #050505;
+  --fc-header-bg:      #000000;
+  --fc-border:         #1c1c1c;
+  --fc-border-hover:   #6366f1;
+  --fc-text-primary:   #ffffff;
+  --fc-text-secondary: #a1a1aa;
+  --fc-text-muted:     #52525b;
+  --fc-accent:         #6366f1;
+  --fc-accent-dim:     rgba(99,102,241,0.10);
+  --fc-blur:           none;
+  --fc-radius:         6px;
+  --fc-shadow:         none;
+  --fc-glow-blue:      none;
+  --fc-glow-green:     none;
+  --fc-glow-purple:    none;
+  --fc-glow-cyan:      none;
+  --fc-glow-amber:     none;
+}
+
+/* ── Aurora — deep navy / gradient ── */
+[data-theme="aurora"] {
+  --fc-page-bg:        #070d1f;
+  --fc-surface:        rgba(15,23,42,0.85);
+  --fc-surface-hover:  rgba(15,23,42,0.95);
+  --fc-surface-active: rgba(99,102,241,0.10);
+  --fc-sidebar-bg:     rgba(7,13,31,0.90);
+  --fc-header-bg:      rgba(7,13,31,0.85);
+  --fc-border:         rgba(99,102,241,0.15);
+  --fc-border-hover:   rgba(167,139,250,0.55);
+  --fc-text-primary:   #e2e8f0;
+  --fc-text-secondary: #94a3b8;
+  --fc-text-muted:     #475569;
+  --fc-accent:         #a78bfa;
+  --fc-accent-dim:     rgba(167,139,250,0.12);
+  --fc-blur:           blur(10px);
+  --fc-radius:         10px;
+  --fc-shadow:         0 4px 32px rgba(99,102,241,0.08);
+  --fc-glow-blue:      0 0 28px rgba(99,102,241,0.18);
+  --fc-glow-green:     0 0 28px rgba(52,211,153,0.18);
+  --fc-glow-purple:    0 0 28px rgba(167,139,250,0.22);
+  --fc-glow-cyan:      0 0 28px rgba(34,211,238,0.18);
+  --fc-glow-amber:     0 0 28px rgba(251,191,36,0.18);
+}
+
+/* ═══════════════════════════════════════════════════
+   Semantic utility classes
+   ═══════════════════════════════════════════════════ */
+
+/* Page */
+.fc-page {
+  min-height: 100vh;
+  background-color: var(--fc-page-bg);
+  color: var(--fc-text-primary);
+}
+
+[data-theme="mission-control"] .fc-page {
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 0%,   rgba(59,130,246,0.08)  0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 85% 100%,  rgba(139,92,246,0.08)  0%, transparent 65%),
+    #060a12;
+}
+
+[data-theme="aurora"] .fc-page {
+  background:
+    radial-gradient(ellipse 100% 55% at 50% -10%, rgba(99,102,241,0.13)  0%, transparent 70%),
+    linear-gradient(160deg, #0a1628 0%, #070d1f 55%, #0d0a1e 100%);
+}
+
+/* Header */
+.fc-header {
+  background:         var(--fc-header-bg);
+  backdrop-filter:    var(--fc-blur);
+  -webkit-backdrop-filter: var(--fc-blur);
+  border-bottom:      1px solid var(--fc-border);
+}
+
+/* Sidebar */
+.fc-sidebar {
+  background:         var(--fc-sidebar-bg);
+  backdrop-filter:    var(--fc-blur);
+  -webkit-backdrop-filter: var(--fc-blur);
+  border-right:       1px solid var(--fc-border);
+}
+
+/* Cards */
+.fc-card {
+  background:         var(--fc-surface);
+  backdrop-filter:    var(--fc-blur);
+  -webkit-backdrop-filter: var(--fc-blur);
+  border:             1px solid var(--fc-border);
+  border-radius:      var(--fc-radius);
+  box-shadow:         var(--fc-shadow);
+  transition:         border-color 0.2s, box-shadow 0.2s;
+}
+.fc-card:hover { border-color: var(--fc-border-hover); }
+
+/* Monochrome Pro: slide micro-interaction */
+[data-theme="monochrome-pro"] .fc-card {
+  transition: border-color 0.15s, transform 0.15s;
+}
+[data-theme="monochrome-pro"] .fc-card:hover { transform: translateX(2px); }
+
+/* Stat card glow variants */
+.fc-card-blue   { box-shadow: var(--fc-glow-blue);   border-color: rgba(59,130,246,0.2);  }
+.fc-card-green  { box-shadow: var(--fc-glow-green);  border-color: rgba(16,185,129,0.2);  }
+.fc-card-purple { box-shadow: var(--fc-glow-purple); border-color: rgba(139,92,246,0.2);  }
+.fc-card-cyan   { box-shadow: var(--fc-glow-cyan);   border-color: rgba(6,182,212,0.2);   }
+.fc-card-amber  { box-shadow: var(--fc-glow-amber);  border-color: rgba(245,158,11,0.2);  }
+
+.fc-card-blue:hover   { border-color: rgba(59,130,246,0.5);  }
+.fc-card-green:hover  { border-color: rgba(16,185,129,0.5);  }
+.fc-card-purple:hover { border-color: rgba(139,92,246,0.5);  }
+.fc-card-cyan:hover   { border-color: rgba(6,182,212,0.5);   }
+.fc-card-amber:hover  { border-color: rgba(245,158,11,0.5);  }
+
+/* Text */
+.fc-text-primary   { color: var(--fc-text-primary);   }
+.fc-text-secondary { color: var(--fc-text-secondary); }
+.fc-text-muted     { color: var(--fc-text-muted);     }
+.fc-accent-text    { color: var(--fc-accent);          }
+.fc-accent-bg      { background: var(--fc-accent-dim); color: var(--fc-accent); border-radius: 9999px; }
+
+/* Divider */
+.fc-divider { border-color: var(--fc-border); }
+
+/* Nav item */
+.fc-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: var(--fc-text-secondary);
+  border-right: 2px solid transparent;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+.fc-nav-item:hover {
+  color: var(--fc-text-primary);
+  background: var(--fc-surface-hover);
+}
+.fc-nav-item.active {
+  color: var(--fc-accent);
+  background: var(--fc-surface-active);
+  border-right-color: var(--fc-accent);
+  font-weight: 500;
+}
+
+/* Form inputs */
+.fc-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: calc(var(--fc-radius) - 4px);
+  color: var(--fc-text-primary);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  backdrop-filter: var(--fc-blur);
+  -webkit-backdrop-filter: var(--fc-blur);
+}
+.fc-input::placeholder { color: var(--fc-text-muted); }
+.fc-input:focus {
+  border-color: var(--fc-accent);
+  box-shadow: 0 0 0 3px var(--fc-accent-dim);
+}
+
+.fc-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--fc-text-secondary);
+  margin-bottom: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fc-btn-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.25rem;
+  background: var(--fc-accent);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: calc(var(--fc-radius) - 4px);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  letter-spacing: 0.025em;
+}
+.fc-btn-primary:hover   { opacity: 0.88; }
+.fc-btn-primary:active  { transform: scale(0.98); }
+.fc-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Login page full-bleed background */
+.fc-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--fc-page-bg);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="mission-control"] .fc-login-page {
+  background:
+    radial-gradient(ellipse 70% 60% at 10% 20%,  rgba(59,130,246,0.12)  0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 80%,  rgba(139,92,246,0.12)  0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 50%,  rgba(6,182,212,0.05)   0%, transparent 50%),
+    #060a12;
+}
+
+[data-theme="aurora"] .fc-login-page {
+  background:
+    radial-gradient(ellipse 80% 60% at 25% 15%,  rgba(99,102,241,0.14)  0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 75% 85%,  rgba(139,92,246,0.12)  0%, transparent 60%),
+    linear-gradient(160deg, #0a1628 0%, #070d1f 100%);
+}
+
+/* Theme switcher dots */
+.fc-theme-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+.fc-theme-dot:hover      { transform: scale(1.25); }
+.fc-theme-dot.fc-dot-active { border-color: rgba(255,255,255,0.8); }
+.fc-dot-mc     { background: radial-gradient(circle at 35% 35%, #60a5fa, #6366f1); }
+.fc-dot-mp     { background: conic-gradient(#ffffff 180deg, #6366f1 180deg); }
+.fc-dot-aurora { background: radial-gradient(circle at 35% 35%, #a78bfa, #0ea5e9); }

@@ -209,10 +209,37 @@ class AuthManager {
       headers.set('Authorization', `Bearer ${this.token}`);
     }
 
-    return fetch(url, {
+    const response = await fetch(url, {
       ...options,
       headers,
     });
+
+    // Handle authentication errors
+    if (response.status === 401) {
+      // Token is invalid, try to refresh first
+      const refreshed = await this.refreshToken();
+      if (refreshed) {
+        // Retry the original request with new token
+        headers.set('Authorization', `Bearer ${this.token}`);
+        return fetch(url, {
+          ...options,
+          headers,
+        });
+      } else {
+        // Refresh failed, clear auth and logout
+        this.logout();
+        throw new Error('Authentication expired. Please login again.');
+      }
+    }
+
+    // Handle server errors that return HTML instead of JSON
+    const contentType = response.headers.get('content-type');
+    if (!response.ok && contentType && contentType.includes('text/html')) {
+      console.error(`Server returned HTML error for ${url}: ${response.status}`);
+      throw new Error(`Server error: ${response.status} ${response.statusText}`);
+    }
+
+    return response;
   }
 
   // Check if token is still valid
@@ -234,7 +261,13 @@ class AuthManager {
     if (!this.token) return false;
 
     try {
-      const response = await this.authenticatedFetch(`${this.API_BASE}/auth.php?action=refresh`);
+      // Use plain fetch — never authenticatedFetch — to avoid infinite 401 loop
+      const response = await fetch(`${this.API_BASE}/auth.php?action=refresh`, {
+        headers: { 'Authorization': `Bearer ${this.token}` },
+      });
+
+      if (!response.ok) return false;
+
       const data = await response.json();
 
       if (data.success && data.token) {

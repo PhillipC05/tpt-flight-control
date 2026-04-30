@@ -1,6 +1,9 @@
 import './style.css'
 import { AuthManager, AuthUI } from './auth.js'
-import { DashboardManager } from './dashboard.js'
+import { DashboardManager } from './dashboard/DashboardManager.js'
+import { ThemeManager } from './services/ThemeManager.js'
+
+ThemeManager.getInstance();
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

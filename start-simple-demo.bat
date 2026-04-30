@@ -28,8 +28,16 @@ echo ^<?php > setup_sqlite.php
 echo try { >> setup_sqlite.php
 echo     $db = new PDO('sqlite:flight_control_demo.db'); >> setup_sqlite.php
 echo     $db-^>setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); >> setup_sqlite.php
+echo     $sql = file_get_contents('schema.sql'); >> setup_sqlite.php
+echo     $db-^>exec($sql); >> setup_sqlite.php
 echo     $sql = file_get_contents('demo_schema.sql'); >> setup_sqlite.php
 echo     $db-^>exec($sql); >> setup_sqlite.php
+echo     // Insert default admin user >> setup_sqlite.php
+echo     $stmt = $db-^>prepare(\"INSERT OR IGNORE INTO roles (id, name, display_name, permissions) VALUES (1, 'admin', 'System Administrator', '[]')\"); >> setup_sqlite.php
+echo     $stmt-^>execute(); >> setup_sqlite.php
+echo     $adminPassword = password_hash('FlightControl@2026!', PASSWORD_DEFAULT); >> setup_sqlite.php
+echo     $stmt = $db-^>prepare(\"INSERT OR IGNORE INTO users (id, username, email, password_hash, first_name, last_name, role_id, is_active) VALUES (1, 'admin', 'admin@tptflightcontrol.com', ?, 'System', 'Administrator', 1, 1)\"); >> setup_sqlite.php
+echo     $stmt-^>execute([$adminPassword]); >> setup_sqlite.php
 echo     echo \"✅ Embedded database created successfully\n\"; >> setup_sqlite.php
 echo } catch (Exception $e) { >> setup_sqlite.php
 echo     echo \"ERROR: \" . $e-^>getMessage() . \"\n\"; >> setup_sqlite.php
