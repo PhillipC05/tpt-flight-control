@@ -6,7 +6,6 @@ import type { User } from '../types.js';
 const defaultUser: User = {
   id: 0,
   username: 'guest',
-  email: '',
   first_name: 'Guest',
   last_name: 'User',
   role_name: 'guest'

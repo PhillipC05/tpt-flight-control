@@ -1,5 +1,5 @@
 import { AuthManager } from '../../auth.js';
-import type { DashboardStats, Flight, Booking } from '../types.js';
+import type { DashboardStats, Flight, Booking, Passenger } from '../types.js';
 
 export class DashboardApiService {
   private auth: AuthManager;
@@ -28,13 +28,28 @@ export class DashboardApiService {
     }
   }
 
-  async fetchFlights(): Promise<Flight[]> {
+async fetchFlights(): Promise<Flight[]> {
     try {
       const response = await this.auth.authenticatedFetch('/api/flights.php?action=list&page=1&limit=20');
       const data = await response.json();
       return data.flights || [];
     } catch (error) {
       console.error('Failed to fetch flights:', error);
+      throw error;
+    }
+  }
+
+  async fetchPassengers(page: number = 1, limit: number = 50, search?: string): Promise<Passenger[]> {
+    try {
+      let url = `/api/passengers.php?page=${page}&limit=${limit}`;
+      if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
+      }
+      const response = await this.auth.authenticatedFetch(url);
+      const data = await response.json();
+      return data.passengers || [];
+    } catch (error) {
+      console.error('Failed to fetch passengers:', error);
       throw error;
     }
   }
@@ -72,7 +87,7 @@ export class DashboardApiService {
     }
   }
 
-  async callApi(endpoint: string, method: string = 'GET', body?: any): Promise<any> {
+async callApi(endpoint: string, method: string = 'GET', body?: any): Promise<any> {
     try {
       const config: RequestInit = {
         method,
@@ -90,6 +105,101 @@ export class DashboardApiService {
       return data;
     } catch (error) {
       console.error(`API call failed for ${endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  async createFlight(flightData: {
+    flight_number: string;
+    airline_id: number;
+    origin: string;
+    destination: string;
+    scheduled_departure: string;
+    scheduled_arrival: string;
+    status?: string;
+    gate?: string;
+    terminal?: string;
+  }): Promise<any> {
+    try {
+      const response = await this.auth.authenticatedFetch('/api/flights.php?action=create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(flightData),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Failed to create flight:', error);
+      throw error;
+    }
+  }
+
+  async updateFlight(flightId: number, flightData: Partial<Flight>): Promise<any> {
+    try {
+      const response = await this.auth.authenticatedFetch('/api/flights.php?action=update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: flightId, ...flightData }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Failed to update flight:', error);
+      throw error;
+    }
+  }
+
+  async deleteFlight(flightId: number): Promise<any> {
+    try {
+      const response = await this.auth.authenticatedFetch('/api/flights.php?action=delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: flightId }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Failed to delete flight:', error);
+      throw error;
+    }
+  }
+
+  async assignGate(flightId: number, gate: string): Promise<any> {
+    try {
+      const response = await this.auth.authenticatedFetch('/api/flights.php?action=assign_gate', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ flight_id: flightId, gate }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Failed to assign gate:', error);
+      throw error;
+    }
+  }
+
+  async assignTerminal(flightId: number, terminal: string): Promise<any> {
+    try {
+      const response = await this.auth.authenticatedFetch('/api/flights.php?action=assign_terminal', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ flight_id: flightId, terminal }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Failed to assign terminal:', error);
       throw error;
     }
   }

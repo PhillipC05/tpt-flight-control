@@ -2,11 +2,9 @@ import { DashboardApiService } from '../services/DashboardApiService.js';
 import type { DashboardStats, User } from '../types.js';
 
 export class OverviewView {
-  private container: HTMLElement;
   private apiService: DashboardApiService;
 
-  constructor(container: HTMLElement) {
-    this.container = container;
+  constructor(_container: HTMLElement) {
     this.apiService = new DashboardApiService();
   }
 
@@ -95,7 +93,7 @@ export class OverviewView {
 
   private statCard(label: string, value: number, icon: string, gradient: string, textColor: string, border: string): string {
     return `
-      <div class="bg-gradient-to-br ${gradient} rounded-xl border ${border} p-5">
+      <div class="bg-linear-to-br ${gradient} rounded-xl border ${border} p-5">
         <div class="flex items-start justify-between">
           <div>
             <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">${label}</p>
@@ -120,10 +118,15 @@ export class OverviewView {
   }
 
   private healthPill(name: string, status: string, color: string): string {
+    const colorClass =
+      color === 'emerald' ? 'text-emerald-400' :
+      color === 'amber'   ? 'text-amber-400' :
+      color === 'red'     ? 'text-red-400' :
+      'text-slate-400';
     return `
       <div class="bg-slate-700/50 rounded-lg p-2 text-center">
         <div class="text-xs text-slate-500 mb-1">${name}</div>
-        <div class="text-xs font-medium text-${color}-400">${status}</div>
+        <div class="text-xs font-medium ${colorClass}">${status}</div>
       </div>
     `;
   }

@@ -3,12 +3,10 @@ import type { DashboardView, MenuItem, User } from '../types.js';
 interface MenuGroup { label: string; items: MenuItem[]; }
 
 export class DashboardSidebar {
-  private container: HTMLElement;
   private currentView: DashboardView;
   private onViewChange: (view: DashboardView) => void;
 
-  constructor(container: HTMLElement, currentView: DashboardView, onViewChange: (view: DashboardView) => void) {
-    this.container = container;
+  constructor(_container: HTMLElement, currentView: DashboardView, onViewChange: (view: DashboardView) => void) {
     this.currentView = currentView;
     this.onViewChange = onViewChange;
   }

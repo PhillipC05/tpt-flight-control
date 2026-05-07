@@ -16,6 +16,7 @@ import { AIConflictPredictionView } from './views/AIConflictPredictionView.js';
 import { AIConflictReportsView } from './views/AIConflictReportsView.js';
 import { VirtualAssistantView } from './views/VirtualAssistantView.js';
 import { ModuleManagementView } from './views/ModuleManagementView.js';
+import { PassengersManagementView } from './views/PassengersManagementView.js';
 import type { DashboardView, User } from './types.js';
 
 export class DashboardManager {
@@ -43,6 +44,7 @@ export class DashboardManager {
   private aiReportsView: AIConflictReportsView;
   private virtualAssistantView: VirtualAssistantView;
   private moduleManagementView: ModuleManagementView;
+  private passengersView: PassengersManagementView;
 
   constructor(container: HTMLElement) {
     this.auth = AuthManager.getInstance();
@@ -68,6 +70,7 @@ export class DashboardManager {
     this.aiReportsView = new AIConflictReportsView(container);
     this.virtualAssistantView = new VirtualAssistantView(container);
     this.moduleManagementView = new ModuleManagementView(container);
+    this.passengersView = new PassengersManagementView(container);
   }
 
   async render() {
@@ -110,7 +113,6 @@ export class DashboardManager {
     }
   }
 
-
   private async renderContent(user: User): Promise<string> {
     console.debug('[DashboardManager] renderContent() for view:', this.currentView);
     try {
@@ -146,7 +148,7 @@ export class DashboardManager {
         case 'module-management':
           return await this.moduleManagementView.render(user);
         case 'passengers':
-          return '<div class="text-center text-gray-500 py-8">Passenger management interface coming soon...</div>';
+          return await this.passengersView.render(user);
         case 'maintenance':
           return '<div class="text-center text-gray-500 py-8">Maintenance management interface coming soon...</div>';
         case 'security':
@@ -165,7 +167,6 @@ export class DashboardManager {
     }
   }
 
-
   private handleViewChange(view: DashboardView): void {
     this.currentView = view;
     this.sidebar.updateCurrentView(view);
@@ -179,7 +180,7 @@ export class DashboardManager {
     // Sidebar event listeners
     this.sidebar.setupEventListeners();
 
-    // View-specific event listeners
+    // View-specific event listeners - register all available views
     switch (this.currentView) {
       case 'overview':
         this.overviewView.setupEventListeners();
@@ -189,6 +190,9 @@ export class DashboardManager {
         break;
       case 'my-bookings':
         this.bookingsView.setupEventListeners();
+        break;
+      case 'passengers':
+        this.passengersView.setupEventListeners();
         break;
       case 'infrastructure':
         this.infrastructureView.setupEventListeners();
@@ -228,69 +232,29 @@ export class DashboardManager {
         break;
     }
 
-    // Global dashboard events
+    // Global flight management events
+    window.addEventListener('refreshFlights', () => {
+      if (this.currentView === 'flights') {
+        this.render();
+      }
+    });
+
+    // Switch back to flights list from map view
+    window.addEventListener('showFlightsList', () => {
+      this.handleViewChange('flights');
+    });
+
+    // Navigate event from quick actions in OverviewView
+    window.addEventListener('navigate', ((e: CustomEvent) => {
+      const view = e.detail?.view as DashboardView;
+      if (view && view !== this.currentView) {
+        this.handleViewChange(view);
+      }
+    }) as EventListener);
+
+    // Refresh overview stats
     window.addEventListener('refreshOverview', () => {
       if (this.currentView === 'overview') {
-        this.render();
-      }
-    });
-
-    window.addEventListener('refreshInfrastructure', () => {
-      if (this.currentView === 'infrastructure') {
-        this.render();
-      }
-    });
-
-    window.addEventListener('showInfrastructureDashboard', () => {
-      this.handleViewChange('infrastructure');
-    });
-
-    window.addEventListener('showInfrastructureReports', () => {
-      this.handleViewChange('infrastructure-reports');
-    });
-
-    window.addEventListener('refreshDroneData', () => {
-      if (this.currentView === 'drones') {
-        this.render();
-      }
-    });
-
-    window.addEventListener('showDroneDashboard', () => {
-      this.handleViewChange('drones');
-    });
-
-    window.addEventListener('showDroneReports', () => {
-      this.handleViewChange('drone-reports');
-    });
-
-    window.addEventListener('refreshBorderData', () => {
-      if (this.currentView === 'customs') {
-        this.render();
-      }
-    });
-
-    window.addEventListener('showBorderReports', () => {
-      this.handleViewChange('customs-reports');
-    });
-
-    window.addEventListener('refreshCustomsReports', () => {
-      if (this.currentView === 'customs-reports') {
-        this.render();
-      }
-    });
-
-    window.addEventListener('refreshSecurityData', () => {
-      if (this.currentView === 'advanced-security') {
-        this.render();
-      }
-    });
-
-    window.addEventListener('showSecurityReports', () => {
-      this.handleViewChange('advanced-security-reports');
-    });
-
-    window.addEventListener('refreshSecurityReports', () => {
-      if (this.currentView === 'advanced-security-reports') {
         this.render();
       }
     });

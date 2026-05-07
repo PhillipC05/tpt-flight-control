@@ -238,20 +238,24 @@ class AuthManager {
 
     // Handle authentication errors
     if (response.status === 401) {
-      // Token is invalid, try to refresh first
+      console.warn(`[Auth] 401 on ${url} — attempting token refresh`);
       const refreshed = await this.refreshToken();
       if (refreshed) {
-        // Retry the original request with new token
+        console.debug('[Auth] Token refreshed, retrying request');
         headers.set('Authorization', `Bearer ${this.token}`);
         return fetch(url, {
           ...options,
           headers,
         });
       } else {
-        // Refresh failed, clear auth and logout
+        console.error(`[Auth] Refresh failed after 401 on ${url} — logging out`);
         this.logout();
         throw new Error('Authentication expired. Please login again.');
       }
+    }
+
+    if (!response.ok) {
+      console.warn(`[Auth] Non-OK response ${response.status} from ${url}`);
     }
 
     // Handle server errors that return HTML instead of JSON

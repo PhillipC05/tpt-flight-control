@@ -43,6 +43,18 @@ export interface User {
   role_name: string;
 }
 
+export interface Passenger {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  passport_number: string;
+  nationality: string;
+  date_of_birth: string;
+  created_at: string;
+}
+
 export type DashboardView = 'overview' | 'flights' | 'passengers' | 'maintenance' | 'security' | 'my-bookings' | 'my-baggage' | 'infrastructure' | 'infrastructure-reports' | 'drones' | 'drone-reports' | 'customs' | 'customs-reports' | 'advanced-security' | 'advanced-security-reports' | 'ai-conflict-prediction' | 'ai-reports' | 'virtual-assistant' | 'module-management';
 
 export interface MenuItem {

@@ -1,4 +1,5 @@
-import { ThemeManager, THEMES, Theme } from '../services/ThemeManager.js';
+import { ThemeManager, THEMES } from '../services/ThemeManager.js';
+import type { Theme } from '../services/ThemeManager.js';
 
 export class ThemeSwitcher {
     private container: HTMLElement;

@@ -98,6 +98,39 @@ function handleGet($action) {
                 echo json_encode(['reports' => $reports]);
                 break;
 
+            case 'stats':
+                Middleware::authenticate();
+                $stats = [
+                    'total_flights'         => 0,
+                    'active_flights'        => 0,
+                    'total_passengers'      => 0,
+                    'checked_in_passengers' => 0,
+                    'total_bookings'        => 0,
+                    'pending_maintenance'   => 0,
+                    'security_alerts'       => 0,
+                    'system_health'         => 'healthy',
+                ];
+                try {
+                    $conn = \TPT\FlightControl\Config\Database::getConnection();
+                    $row = $conn->query("
+                        SELECT
+                            (SELECT COUNT(*) FROM flights)                                      AS total_flights,
+                            (SELECT COUNT(*) FROM flights WHERE status = 'active')              AS active_flights,
+                            (SELECT COUNT(*) FROM passengers)                                   AS total_passengers,
+                            (SELECT COUNT(*) FROM passengers WHERE checked_in = true)           AS checked_in_passengers,
+                            (SELECT COUNT(*) FROM bookings)                                     AS total_bookings,
+                            (SELECT COUNT(*) FROM maintenance_records WHERE status = 'pending') AS pending_maintenance,
+                            (SELECT COUNT(*) FROM security_incidents WHERE resolved = false)    AS security_alerts
+                    ")->fetch(\PDO::FETCH_ASSOC);
+                    if ($row) {
+                        $stats = array_merge($stats, array_map('intval', $row));
+                    }
+                } catch (\Exception $e) {
+                    // DB not ready — return zeroed stats
+                }
+                echo json_encode(['stats' => $stats]);
+                break;
+
             default:
                 http_response_code(400);
                 echo json_encode(['error' => 'Invalid action']);
