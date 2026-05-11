@@ -2,11 +2,9 @@ import { DashboardApiService } from '../services/DashboardApiService.js';
 import type { Booking, User } from '../types.js';
 
 export class MyBookingsView {
-  private container: HTMLElement;
   private apiService: DashboardApiService;
 
-  constructor(container: HTMLElement) {
-    this.container = container;
+  constructor(_container: HTMLElement) {
     this.apiService = new DashboardApiService();
   }
 

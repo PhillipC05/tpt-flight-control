@@ -83,7 +83,7 @@ export class OverviewView {
               ${this.quickAction('✈', 'View Flights',      'flights')}
               ${this.quickAction('👤','Passengers',         'passengers')}
               ${this.quickAction('🔧','Maintenance',        'maintenance')}
-              ${this.quickAction('🔐','Security',           'advanced-security')}
+              ${this.quickAction('🔐','Access Control',     'security')}
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ export class DashboardSidebar {
   private currentView: DashboardView;
   private onViewChange: (view: DashboardView) => void;
 
-  constructor(_container: HTMLElement, currentView: DashboardView, onViewChange: (view: DashboardView) => void) {
+  constructor(currentView: DashboardView, onViewChange: (view: DashboardView) => void) {
     this.currentView = currentView;
     this.onViewChange = onViewChange;
   }
@@ -77,8 +77,8 @@ export class DashboardSidebar {
       groups.push({
         label: 'System',
         items: [
-          { id: 'module-management', label: 'Modules',  icon: '⚙' },
-          { id: 'security',          label: 'Security', icon: '🔒' },
+          { id: 'module-management', label: 'Modules',    icon: '⚙' },
+          { id: 'security',          label: 'Access Control', icon: '🔒' },
         ]
       });
     }

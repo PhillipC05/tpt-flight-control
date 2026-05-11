@@ -49,7 +49,6 @@ export class ATC3DVisualization {
   private config: ATCVisualizationConfig;
   private animationId: number | null = null;
   private websocket: WebSocket | null = null;
-  private lastUpdate: number = 0;
 
   constructor(config: ATCVisualizationConfig) {
     this.config = config;

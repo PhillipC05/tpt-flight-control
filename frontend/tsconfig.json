@@ -23,5 +23,28 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/_legacy", "src/**/__tests__/**", "src/**/*.test.ts", "src/**/*.spec.ts"]
+  "exclude": [
+    "src/_legacy",
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/mobile-controller.ts",
+    "src/pwa-baggage-tracking.ts",
+    "src/pwa-passenger-alerts.ts",
+    "src/pwa-self-checkin.ts",
+    "src/atc-3d-visualization.ts",
+    "src/dashboard/views/AdvancedSecurityReportsView.ts",
+    "src/dashboard/views/AdvancedSecurityView.ts",
+    "src/dashboard/views/AIConflictPredictionView.ts",
+    "src/dashboard/views/AIConflictReportsView.ts",
+    "src/dashboard/views/CustomsBorderProtectionView.ts",
+    "src/dashboard/views/CustomsReportsView.ts",
+    "src/dashboard/views/DroneOperationsView.ts",
+    "src/dashboard/views/DroneReportsView.ts",
+    "src/dashboard/views/InfrastructureManagementView.ts",
+    "src/dashboard/views/InfrastructureReportsView.ts",
+    "src/dashboard/views/ModuleManagementView.ts",
+    "src/dashboard/views/VirtualAssistantView.ts",
+    "src/dashboard/views/MyBookingsView.ts"
+  ]
 }

@@ -24,18 +24,18 @@ export class FlightsManagementView {
       return `
         <div class="space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-gray-900">Flight Management</h2>
-            <div class="flex items-center space-x-2">
+            <h2 class="text-xl font-semibold text-slate-100">Flight Management</h2>
+            <div class="flex items-center gap-2">
               <input type="text" id="flight-search" placeholder="Search flights..."
-                     class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-              <button id="toggle-view-btn" class="px-4 py-2 rounded-md font-medium transition-colors ${
+                     class="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <button id="toggle-view-btn" class="px-4 py-2 rounded-lg font-medium transition-colors ${
                 this.currentViewMode === 'list'
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-blue-600 text-white hover:bg-blue-500'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }">
                 ${this.currentViewMode === 'list' ? '🗺 Map View' : '📋 List View'}
               </button>
-              <button id="add-flight-btn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+              <button id="add-flight-btn" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors">
                 Add Flight
               </button>
             </div>
@@ -46,59 +46,69 @@ export class FlightsManagementView {
       `;
     } catch (error) {
       console.error('Failed to load flights:', error);
-      return '<div class="text-center text-red-500">Failed to load flight data</div>';
+      return '<div class="text-center text-red-400 py-8">Failed to load flight data</div>';
     }
   }
 
+  private sanitize(str: string): string {
+    const el = document.createElement('div');
+    el.textContent = str;
+    return el.innerHTML;
+  }
+
   private renderListView(flights: Flight[]): string {
+    const statusColors: Record<string, string> = {
+      scheduled: 'bg-yellow-900/30 text-yellow-300',
+      boarding: 'bg-blue-900/30 text-blue-300',
+      departed: 'bg-emerald-900/30 text-emerald-300',
+      arrived: 'bg-slate-600/30 text-slate-300',
+      cancelled: 'bg-red-900/30 text-red-300',
+    };
+
     return `
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table id="flights-table" class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flight</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departure</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gate</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            ${flights.map(flight => `
+      <div class="bg-slate-800 border border-slate-700/60 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table id="flights-table" class="min-w-full divide-y divide-slate-700/60">
+            <thead class="bg-slate-800/50">
               <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">${flight.flight_number}</div>
-                  <div class="text-sm text-gray-500">${flight.airline_name}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${flight.origin} → ${flight.destination}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${new Date(flight.scheduled_departure).toLocaleString()}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    flight.status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' :
-                    flight.status === 'boarding' ? 'bg-blue-100 text-blue-800' :
-                    flight.status === 'departed' ? 'bg-green-100 text-green-800' :
-                    flight.status === 'arrived' ? 'bg-gray-100 text-gray-800' :
-                    'bg-red-100 text-red-800'
-                  }">
-                    ${flight.status}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${flight.gate || 'Not assigned'}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                  <button class="text-red-600 hover:text-red-900">Delete</button>
-                </td>
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Flight</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Route</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Departure</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Gate</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
               </tr>
-            `).join('')}
-          </tbody>
-        </table>
+            </thead>
+            <tbody class="divide-y divide-slate-700/60">
+              ${flights.map(flight => `
+                <tr class="hover:bg-slate-700/30 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-slate-200">${this.sanitize(flight.flight_number)}</div>
+                    <div class="text-sm text-slate-400">${this.sanitize(flight.airline_name || '')}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                    ${this.sanitize(flight.origin)} → ${this.sanitize(flight.destination)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                    ${new Date(flight.scheduled_departure).toLocaleString()}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[flight.status] || 'bg-slate-600/30 text-slate-300'}">
+                      ${this.sanitize(flight.status)}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                    ${this.sanitize(flight.gate || 'Not assigned')}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button class="text-blue-400 hover:text-blue-300 mr-3 transition-colors">Edit</button>
+                    <button class="text-red-400 hover:text-red-300 transition-colors">Delete</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
   }
@@ -151,10 +161,11 @@ export class FlightsManagementView {
   }
 
   private async reRenderView(): Promise<void> {
-    if (this.cachedUser) {
-      await this.render(this.cachedUser);
-      this.setupEventListeners();
-    }
+    if (!this.cachedUser) return;
+    const content = document.getElementById('dashboard-content');
+    if (!content) return;
+    content.innerHTML = await this.render(this.cachedUser);
+    this.setupEventListeners();
   }
 
   private initMapView(): void {
@@ -177,21 +188,21 @@ export class FlightsManagementView {
 
   private openAddFlightModal() {
     const modalHtml = `
-      <div id="add-flight-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div id="add-flight-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-slate-800 border border-slate-700/60 p-6 rounded-xl shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold">Add New Flight</h3>
-            <button id="close-add-flight-modal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            <h3 class="text-lg font-bold text-slate-100">Add New Flight</h3>
+            <button id="close-add-flight-modal" class="text-slate-400 hover:text-white text-2xl transition-colors">&times;</button>
           </div>
           <form id="add-flight-form">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Flight Number</label>
-                <input type="text" id="flight-number" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-sm font-medium text-slate-300 mb-1">Flight Number</label>
+                <input type="text" id="flight-number" required class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Airline</label>
-                <select id="airline" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-sm font-medium text-slate-300 mb-1">Airline</label>
+                <select id="airline" required class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   <option value="">Select Airline</option>
                   <option value="1">Delta Airlines</option>
                   <option value="2">American Airlines</option>
@@ -202,43 +213,43 @@ export class FlightsManagementView {
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Origin</label>
-                  <input type="text" id="origin" placeholder="e.g., LAX" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Origin</label>
+                  <input type="text" id="origin" placeholder="e.g., LAX" required class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Destination</label>
-                  <input type="text" id="destination" placeholder="e.g., JFK" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Destination</label>
+                  <input type="text" id="destination" placeholder="e.g., JFK" required class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Departure</label>
-                  <input type="datetime-local" id="departure" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Departure</label>
+                  <input type="datetime-local" id="departure" required class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Arrival</label>
-                  <input type="datetime-local" id="arrival" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Arrival</label>
+                  <input type="datetime-local" id="arrival" required class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Gate</label>
-                  <input type="text" id="gate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Gate</label>
+                  <input type="text" id="gate" class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Terminal</label>
-                  <input type="text" id="terminal" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Terminal</label>
+                  <input type="text" id="terminal" class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
               </div>
-              <div class="flex space-x-3 pt-4">
-                <button type="submit" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 font-medium">
+              <div class="flex gap-3 pt-4">
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-500 font-medium transition-colors">
                   Create Flight
                 </button>
-                <button type="button" id="cancel-add-flight" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 font-medium">
+                <button type="button" id="cancel-add-flight" class="flex-1 bg-slate-700 text-slate-300 py-2.5 px-4 rounded-lg hover:bg-slate-600 font-medium transition-colors">
                   Cancel
                 </button>
               </div>
-              <div id="add-flight-error" class="mt-2 p-2 bg-red-100 border border-red-400 text-red-700 rounded hidden">
+              <div id="add-flight-error" class="mt-2 p-2 bg-red-900/30 border border-red-700 text-red-300 rounded hidden">
                 Error creating flight. Please try again.
               </div>
             </div>

@@ -62,3 +62,19 @@ export interface MenuItem {
   label: string;
   icon: string;
 }
+
+export interface DashboardConfig {
+  user: {
+    id: string;
+    name: string;
+    role: string;
+    permissions: string[];
+  };
+  modules: {
+    cargo: boolean;
+    sustainability: boolean;
+    commercial: boolean;
+    emergency: boolean;
+    passengerAlerts: boolean;
+  };
+}

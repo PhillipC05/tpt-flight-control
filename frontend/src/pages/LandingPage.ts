@@ -125,7 +125,6 @@ export class LandingPage extends Component {
     }
   ];
 
-  private selectedRole: Role | null = null;
   private isLoading = false;
 
   constructor() {
@@ -628,7 +627,7 @@ export class LandingPage extends Component {
   }
 
   private updateLoadingState() {
-    const startBtn = document.getElementById('startRoleBtn');
+    const startBtn = document.getElementById('startRoleBtn') as HTMLButtonElement | null;
     if (startBtn) {
       if (this.isLoading) {
         startBtn.textContent = '🚀 Starting...';

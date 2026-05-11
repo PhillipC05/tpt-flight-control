@@ -12,12 +12,10 @@ const defaultUser: User = {
 };
 
 export class DashboardHeader {
-  private container: HTMLElement;
   private auth: AuthManager;
   private themeManager: ThemeManager;
 
-  constructor(container: HTMLElement) {
-    this.container = container;
+  constructor(_container: HTMLElement) {
     this.auth = AuthManager.getInstance();
     this.themeManager = ThemeManager.getInstance();
   }

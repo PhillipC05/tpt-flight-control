@@ -200,7 +200,7 @@ class SelfCheckInPWA {
             });
 
             if (response.success && response.data) {
-                this.currentPassenger = response.data as Passenger;
+                this.currentPassenger = response.data as unknown as Passenger;
                 this.showPassengerInfo();
                 this.nextStep();
             } else {
@@ -236,8 +236,8 @@ class SelfCheckInPWA {
 
         try {
             // Load flight details and seat map
-            const response = await this.apiService.get(`/flights/${flightSelect.value}`);
-            if (response.success) {
+            const response = await this.apiService.get<{ seats: any[] }>(`/flights/${flightSelect.value}`);
+            if (response.success && response.data) {
                 this.renderSeatMap(response.data.seats);
             }
         } catch (error) {
@@ -356,9 +356,9 @@ class SelfCheckInPWA {
                 biometric_verified: true
             };
 
-            const response = await this.apiService.post('/checkin', checkInData);
+        const response = await this.apiService.post<{ flight_number: string; seat_number: string; boarding_time: string; gate_number: string }>('/checkin', checkInData);
 
-            if (response.success) {
+        if (response.success && response.data) {
                 this.showCheckInComplete(response.data);
                 this.generateBoardingPass(response.data);
             } else {

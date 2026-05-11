@@ -4,25 +4,17 @@ import { DashboardSidebar } from './components/DashboardSidebar.js';
 import { OverviewView } from './views/OverviewView.js';
 import { FlightsManagementView } from './views/FlightsManagementView.js';
 import { MyBookingsView } from './views/MyBookingsView.js';
-import { InfrastructureManagementView } from './views/InfrastructureManagementView.js';
-import { InfrastructureReportsView } from './views/InfrastructureReportsView.js';
-import { DroneOperationsView } from './views/DroneOperationsView.js';
-import { DroneReportsView } from './views/DroneReportsView.js';
-import { CustomsBorderProtectionView } from './views/CustomsBorderProtectionView.js';
-import { CustomsReportsView } from './views/CustomsReportsView.js';
-import { AdvancedSecurityView } from './views/AdvancedSecurityView.js';
-import { AdvancedSecurityReportsView } from './views/AdvancedSecurityReportsView.js';
-import { AIConflictPredictionView } from './views/AIConflictPredictionView.js';
-import { AIConflictReportsView } from './views/AIConflictReportsView.js';
-import { VirtualAssistantView } from './views/VirtualAssistantView.js';
-import { ModuleManagementView } from './views/ModuleManagementView.js';
 import { PassengersManagementView } from './views/PassengersManagementView.js';
+import { MaintenanceView } from './views/MaintenanceView.js';
+import { SecurityManagementView } from './views/SecurityManagementView.js';
+import { MyBaggageView } from './views/MyBaggageView.js';
 import type { DashboardView, User } from './types.js';
 
 export class DashboardManager {
   private auth: AuthManager;
   private container: HTMLElement;
   private currentView: DashboardView = 'overview';
+  private abortController: AbortController | null = null;
 
   // Components
   private header: DashboardHeader;
@@ -32,19 +24,10 @@ export class DashboardManager {
   private overviewView: OverviewView;
   private flightsView: FlightsManagementView;
   private bookingsView: MyBookingsView;
-  private infrastructureView: InfrastructureManagementView;
-  private infrastructureReportsView: InfrastructureReportsView;
-  private droneView: DroneOperationsView;
-  private droneReportsView: DroneReportsView;
-  private customsView: CustomsBorderProtectionView;
-  private customsReportsView: CustomsReportsView;
-  private advancedSecurityView: AdvancedSecurityView;
-  private advancedSecurityReportsView: AdvancedSecurityReportsView;
-  private aiConflictView: AIConflictPredictionView;
-  private aiReportsView: AIConflictReportsView;
-  private virtualAssistantView: VirtualAssistantView;
-  private moduleManagementView: ModuleManagementView;
   private passengersView: PassengersManagementView;
+  private maintenanceView: MaintenanceView;
+  private securityView: SecurityManagementView;
+  private baggageView: MyBaggageView;
 
   constructor(container: HTMLElement) {
     this.auth = AuthManager.getInstance();
@@ -52,40 +35,27 @@ export class DashboardManager {
 
     // Initialize components
     this.header = new DashboardHeader(container);
-    this.sidebar = new DashboardSidebar(container, this.currentView, this.handleViewChange.bind(this));
+    this.sidebar = new DashboardSidebar(this.currentView, this.handleViewChange.bind(this));
 
     // Initialize views
     this.overviewView = new OverviewView(container);
     this.flightsView = new FlightsManagementView(container);
     this.bookingsView = new MyBookingsView(container);
-    this.infrastructureView = new InfrastructureManagementView(container);
-    this.infrastructureReportsView = new InfrastructureReportsView(container);
-    this.droneView = new DroneOperationsView(container);
-    this.droneReportsView = new DroneReportsView(container);
-    this.customsView = new CustomsBorderProtectionView(container);
-    this.customsReportsView = new CustomsReportsView(container);
-    this.advancedSecurityView = new AdvancedSecurityView(container);
-    this.advancedSecurityReportsView = new AdvancedSecurityReportsView(container);
-    this.aiConflictView = new AIConflictPredictionView(container);
-    this.aiReportsView = new AIConflictReportsView(container);
-    this.virtualAssistantView = new VirtualAssistantView(container);
-    this.moduleManagementView = new ModuleManagementView(container);
     this.passengersView = new PassengersManagementView(container);
+    this.maintenanceView = new MaintenanceView(container);
+    this.securityView = new SecurityManagementView(container);
+    this.baggageView = new MyBaggageView(container);
   }
 
   async render() {
-    console.debug('[DashboardManager] render() called');
     try {
       const user = this.auth.getUser();
-      console.debug('[DashboardManager] User from auth:', user ? `${user.username} / role: ${user.role_name}` : 'null', 'role_name type:', typeof user?.role_name);
 
       if (!user || typeof user.role_name === 'undefined') {
-        console.error('[DashboardManager] Authentication check failed - user:', user, 'role_name:', user?.role_name);
         this.container.innerHTML = '<div class="min-h-screen bg-slate-950 flex items-center justify-center text-red-400">Authentication required</div>';
         return;
       }
 
-      console.debug('[DashboardManager] Rendering view:', this.currentView);
       this.container.innerHTML = `
         <div class="min-h-screen bg-slate-950 flex flex-col">
           ${this.header.render(user)}
@@ -101,20 +71,22 @@ export class DashboardManager {
       `;
 
       this.setupEventListeners();
-      console.debug('[DashboardManager] render() completed successfully');
     } catch (error) {
       console.error('[DashboardManager] render() error:', error);
       this.container.innerHTML = `<div class="min-h-screen bg-slate-950 flex items-center justify-center text-red-400 p-8">
         <div>
           <h2 class="text-xl font-bold mb-2">Dashboard Error</h2>
-          <pre class="text-sm whitespace-pre-wrap">${error instanceof Error ? error.message : String(error)}</pre>
+          <pre class="text-sm whitespace-pre-wrap"></pre>
         </div>
       </div>`;
+      const errorPre = this.container.querySelector('pre');
+      if (errorPre) {
+        errorPre.textContent = error instanceof Error ? error.message : String(error);
+      }
     }
   }
 
   private async renderContent(user: User): Promise<string> {
-    console.debug('[DashboardManager] renderContent() for view:', this.currentView);
     try {
       switch (this.currentView) {
         case 'overview':
@@ -123,46 +95,36 @@ export class DashboardManager {
           return await this.flightsView.render(user);
         case 'my-bookings':
           return await this.bookingsView.render(user);
-        case 'infrastructure':
-          return await this.infrastructureView.render(user);
-        case 'infrastructure-reports':
-          return await this.infrastructureReportsView.render(user);
-        case 'drones':
-          return await this.droneView.render(user);
-        case 'drone-reports':
-          return await this.droneReportsView.render(user);
-        case 'customs':
-          return await this.customsView.render(user);
-        case 'customs-reports':
-          return await this.customsReportsView.render(user);
-        case 'advanced-security':
-          return await this.advancedSecurityView.render(user);
-        case 'advanced-security-reports':
-          return await this.advancedSecurityReportsView.render(user);
-        case 'ai-conflict-prediction':
-          return await this.aiConflictView.render(user);
-        case 'ai-reports':
-          return await this.aiReportsView.render(user);
-        case 'virtual-assistant':
-          return await this.virtualAssistantView.render(user);
-        case 'module-management':
-          return await this.moduleManagementView.render(user);
         case 'passengers':
           return await this.passengersView.render(user);
+        case 'infrastructure':
+        case 'infrastructure-reports':
+        case 'drones':
+        case 'drone-reports':
+        case 'customs':
+        case 'customs-reports':
+        case 'advanced-security':
+        case 'advanced-security-reports':
+        case 'ai-conflict-prediction':
+        case 'ai-reports':
+        case 'virtual-assistant':
+        case 'module-management':
+          return '<div class="text-center text-gray-500 py-8">Coming soon...</div>';
         case 'maintenance':
-          return '<div class="text-center text-gray-500 py-8">Maintenance management interface coming soon...</div>';
+          return await this.maintenanceView.render(user);
         case 'security':
-          return '<div class="text-center text-gray-500 py-8">Security management interface coming soon...</div>';
+          return await this.securityView.render(user);
         case 'my-baggage':
-          return '<div class="text-center text-gray-500 py-8">Baggage tracking interface coming soon...</div>';
+          return await this.baggageView.render(user);
         default:
           return '<div class="text-center text-gray-500">Content not available</div>';
       }
     } catch (error) {
       console.error('[DashboardManager] renderContent() error for view', this.currentView, ':', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return `<div class="text-center text-red-400 py-8">
         <div class="font-bold mb-2">Error loading view: ${this.currentView}</div>
-        <div class="text-sm">${error instanceof Error ? error.message : String(error)}</div>
+        <div id="error-message-text" class="text-sm"></div>
       </div>`;
     }
   }
@@ -174,6 +136,13 @@ export class DashboardManager {
   }
 
   private setupEventListeners(): void {
+    // Clean up previous listeners before adding new ones
+    if (this.abortController) {
+      this.abortController.abort();
+    }
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
+
     // Header event listeners
     this.header.setupEventListeners();
 
@@ -194,41 +163,14 @@ export class DashboardManager {
       case 'passengers':
         this.passengersView.setupEventListeners();
         break;
-      case 'infrastructure':
-        this.infrastructureView.setupEventListeners();
+      case 'maintenance':
+        this.maintenanceView.setupEventListeners();
         break;
-      case 'infrastructure-reports':
-        this.infrastructureReportsView.setupEventListeners();
+      case 'security':
+        this.securityView.setupEventListeners();
         break;
-      case 'drones':
-        this.droneView.setupEventListeners();
-        break;
-      case 'drone-reports':
-        this.droneReportsView.setupEventListeners();
-        break;
-      case 'customs':
-        this.customsView.setupEventListeners();
-        break;
-      case 'customs-reports':
-        this.customsReportsView.setupEventListeners();
-        break;
-      case 'advanced-security':
-        this.advancedSecurityView.setupEventListeners();
-        break;
-      case 'advanced-security-reports':
-        this.advancedSecurityReportsView.setupEventListeners();
-        break;
-      case 'ai-conflict-prediction':
-        this.aiConflictView.setupEventListeners();
-        break;
-      case 'ai-reports':
-        this.aiReportsView.setupEventListeners();
-        break;
-      case 'virtual-assistant':
-        this.virtualAssistantView.setupEventListeners();
-        break;
-      case 'module-management':
-        this.moduleManagementView.setupEventListeners();
+      case 'my-baggage':
+        this.baggageView.setupEventListeners();
         break;
     }
 
@@ -237,12 +179,12 @@ export class DashboardManager {
       if (this.currentView === 'flights') {
         this.render();
       }
-    });
+    }, { signal });
 
     // Switch back to flights list from map view
     window.addEventListener('showFlightsList', () => {
       this.handleViewChange('flights');
-    });
+    }, { signal });
 
     // Navigate event from quick actions in OverviewView
     window.addEventListener('navigate', ((e: CustomEvent) => {
@@ -250,13 +192,13 @@ export class DashboardManager {
       if (view && view !== this.currentView) {
         this.handleViewChange(view);
       }
-    }) as EventListener);
+    }) as EventListener, { signal });
 
     // Refresh overview stats
     window.addEventListener('refreshOverview', () => {
       if (this.currentView === 'overview') {
         this.render();
       }
-    });
+    }, { signal });
   }
 }

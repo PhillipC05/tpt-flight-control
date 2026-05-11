@@ -14,6 +14,7 @@
     "cypress:run": "cypress run"
   },
   "devDependencies": {
+    "@types/date-fns": "^2.5.3",
     "@types/jest": "^29.5.12",
     "autoprefixer": "^10.4.21",
     "cypress": "^13.13.3",
@@ -30,6 +31,7 @@
     "@tailwindcss/vite": "^4.2.4",
     "@types/leaflet": "^1.9.21",
     "@types/three": "^0.180.0",
+    "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
     "three": "^0.180.0"
   }

@@ -380,10 +380,11 @@ class PassengerAlertsPWA {
             });
 
             if (response.success && response.data) {
-                this.currentPassengerId = response.data.passenger_id;
-                this.alerts = response.data.alerts || [];
-                this.reminders = response.data.reminders || [];
-                this.preferences = response.data.preferences || null;
+                const data = response.data as { passenger_id: string; alerts: PassengerAlert[]; reminders: TravelReminder[]; preferences: NotificationPreference | null };
+                this.currentPassengerId = data.passenger_id;
+                this.alerts = data.alerts || [];
+                this.reminders = data.reminders || [];
+                this.preferences = data.preferences || null;
 
                 // Hide identification form and show alerts
                 const identificationDiv = document.getElementById('passenger-identification');
@@ -672,8 +673,9 @@ class PassengerAlertsPWA {
             const response = await this.apiService.get(`/alerts/passenger/${this.currentPassengerId}`);
 
             if (response.success && response.data) {
-                this.alerts = response.data.alerts || [];
-                this.reminders = response.data.reminders || [];
+                const data = response.data as { alerts: PassengerAlert[]; reminders: TravelReminder[] };
+                this.alerts = data.alerts || [];
+                this.reminders = data.reminders || [];
                 this.displayAlerts();
                 this.displayReminders();
             }

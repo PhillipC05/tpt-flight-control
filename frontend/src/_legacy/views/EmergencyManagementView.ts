@@ -1,5 +1,5 @@
 import { DashboardApiService } from '../services/DashboardApiService.js';
-import type { DashboardConfig } from '../../dashboard.js';
+import type { DashboardConfig } from '../types.js';
 
 export class EmergencyManagementView {
   private apiService: DashboardApiService;

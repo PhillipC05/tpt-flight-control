@@ -39,20 +39,22 @@ export interface MultiplayerEvent {
 }
 
 export class MultiplayerClient {
+  private apiService: ApiService;
   private currentSessionId: number | null = null;
   private lastEventId: number = 0;
   private pollInterval: number | null = null;
   private eventHandlers: Map<string, Function[]> = new Map();
   private players: Map<number, MultiplayerPlayer> = new Map();
-  private isConnected: boolean = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(apiService: ApiService) {
+    this.apiService = apiService;
+  }
 
   /**
    * Create new multiplayer session
    */
   async createSession(scenarioId: number, sessionName: string, maxPlayers = 4, isPrivate = false, settings = {}): Promise<{ session_id: number; session_code: string }> {
-    const response = await this.apiService.post('/multiplayer?action=create', {
+    const response = await this.apiService.post<{ session_id: number; session_code: string }>('/multiplayer?action=create', {
       scenario_id: scenarioId,
       session_name: sessionName,
       max_players: maxPlayers,
@@ -60,12 +62,16 @@ export class MultiplayerClient {
       settings
     });
 
-    this.currentSessionId = response.session_id;
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to create session');
+    }
+
+    this.currentSessionId = response.data.session_id;
     this.startEventPolling();
     
     return {
-      session_id: response.session_id,
-      session_code: response.session_code
+      session_id: response.data.session_id,
+      session_code: response.data.session_code
     };
   }
 
@@ -73,14 +79,18 @@ export class MultiplayerClient {
    * Join existing session with code
    */
   async joinSession(sessionCode: string): Promise<number> {
-    const response = await this.apiService.post('/multiplayer?action=join', {
+    const response = await this.apiService.post<{ session_id: number }>('/multiplayer?action=join', {
       session_code: sessionCode
     });
 
-    this.currentSessionId = response.session_id;
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to join session');
+    }
+
+    this.currentSessionId = response.data.session_id;
     this.startEventPolling();
     
-    return response.session_id;
+    return response.data.session_id;
   }
 
   /**
@@ -97,15 +107,17 @@ export class MultiplayerClient {
     this.currentSessionId = null;
     this.players.clear();
     this.lastEventId = 0;
-    this.isConnected = false;
   }
 
   /**
    * Get active sessions
    */
   async getActiveSessions(): Promise<MultiplayerSession[]> {
-    const response = await this.apiService.get('/multiplayer?action=sessions');
-    return response.sessions;
+    const response = await this.apiService.get<{ sessions: MultiplayerSession[] }>('/multiplayer?action=sessions');
+    if (!response.success || !response.data) {
+      return [];
+    }
+    return response.data.sessions;
   }
 
   /**
@@ -114,7 +126,11 @@ export class MultiplayerClient {
   async getSessionDetails(): Promise<MultiplayerSession> {
     if (!this.currentSessionId) throw new Error('Not in session');
     
-    return await this.apiService.get(`/multiplayer?action=session&id=${this.currentSessionId}`);
+    const response = await this.apiService.get<MultiplayerSession>(`/multiplayer?action=session&id=${this.currentSessionId}`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to get session details');
+    }
+    return response.data;
   }
 
   /**
@@ -123,13 +139,16 @@ export class MultiplayerClient {
   async getPlayers(): Promise<MultiplayerPlayer[]> {
     if (!this.currentSessionId) throw new Error('Not in session');
     
-    const response = await this.apiService.get(`/multiplayer?action=players&session_id=${this.currentSessionId}`);
+    const response = await this.apiService.get<{ players: MultiplayerPlayer[] }>(`/multiplayer?action=players&session_id=${this.currentSessionId}`);
+    if (!response.success || !response.data) {
+      return [];
+    }
     
-    response.players.forEach((player: MultiplayerPlayer) => {
+    response.data.players.forEach((player: MultiplayerPlayer) => {
       this.players.set(player.user_id, player);
     });
 
-    return response.players;
+    return response.data.players;
   }
 
   /**
@@ -138,14 +157,18 @@ export class MultiplayerClient {
   async sendEvent(eventType: string, eventData: any, targetPlayers?: number[]): Promise<number> {
     if (!this.currentSessionId) throw new Error('Not in session');
 
-    const response = await this.apiService.post('/multiplayer?action=send_event', {
+    const response = await this.apiService.post<{ event_id: number }>('/multiplayer?action=send_event', {
       session_id: this.currentSessionId,
       event_type: eventType,
       event_data: eventData,
       target_players: targetPlayers
     });
 
-    return response.event_id;
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to send event');
+    }
+
+    return response.data.event_id;
   }
 
   /**
@@ -186,7 +209,11 @@ export class MultiplayerClient {
    * Get user status
    */
   async getUserStatus(): Promise<{ in_session: boolean; session_id: number | null; role: string | null }> {
-    return await this.apiService.get('/multiplayer?action=status');
+    const response = await this.apiService.get<{ in_session: boolean; session_id: number | null; role: string | null }>('/multiplayer?action=status');
+    if (!response.success || !response.data) {
+      return { in_session: false, session_id: null, role: null };
+    }
+    return response.data;
   }
 
   /**
@@ -243,11 +270,13 @@ export class MultiplayerClient {
   private async pollEvents(): Promise<void> {
     if (!this.currentSessionId) return;
 
-    const response = await this.apiService.get(
+    const response = await this.apiService.get<{ events: MultiplayerEvent[] }>(
       `/multiplayer?action=events&session_id=${this.currentSessionId}&last_event_id=${this.lastEventId}`
     );
 
-    for (const event of response.events) {
+    if (!response.success || !response.data) return;
+
+    for (const event of response.data.events) {
       this.lastEventId = Math.max(this.lastEventId, event.id);
       this.emitEvent(event);
     }
@@ -288,6 +317,5 @@ export class MultiplayerClient {
     this.eventHandlers.clear();
     this.players.clear();
     this.currentSessionId = null;
-    this.isConnected = false;
   }
 }

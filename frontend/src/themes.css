@@ -282,3 +282,18 @@
 .fc-dot-mc     { background: radial-gradient(circle at 35% 35%, #60a5fa, #6366f1); }
 .fc-dot-mp     { background: conic-gradient(#ffffff 180deg, #6366f1 180deg); }
 .fc-dot-aurora { background: radial-gradient(circle at 35% 35%, #a78bfa, #0ea5e9); }
+
+/* ── Map: active flight marker pulse ── */
+@keyframes fc-flight-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(99, 179, 237, 0.7), 0 0 0 0   rgba(99, 179, 237, 0.4); }
+  50%  { box-shadow: 0 0 0 6px rgba(99, 179, 237, 0.3), 0 0 0 12px rgba(99, 179, 237, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(99, 179, 237, 0.7), 0 0 0 0   rgba(99, 179, 237, 0.4); }
+}
+
+.flight-marker-active {
+  animation: fc-flight-pulse 1.5s ease-out infinite;
+  border-radius: 50%;
+  outline: 2px solid rgba(99, 179, 237, 0.9);
+  outline-offset: 2px;
+  z-index: 10 !important;
+}

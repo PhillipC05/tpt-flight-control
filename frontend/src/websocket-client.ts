@@ -75,7 +75,7 @@ export class FlightControlWebSocket {
     }
   }
 
-  private onOpen(event: Event): void {
+  private onOpen(_event: Event): void {
     console.log('WebSocket connected successfully');
     this.connected = true;
     this.reconnectAttempts = 0;
@@ -455,7 +455,7 @@ export class RealTimeDataManager {
     this.wsClient.subscribeToFlights();
   }
 
-  subscribeToFlight(flightId: number): void {
+  subscribeToFlight(_flightId: number): void {
     this.wsClient.subscribeToFlights({ /* specific flight filter */ });
   }
 

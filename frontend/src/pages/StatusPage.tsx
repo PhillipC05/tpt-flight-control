@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 
 interface SystemStatus {
   status: 'operational' | 'degraded' | 'partial_outage' | 'major_outage';
@@ -194,7 +194,7 @@ export default function StatusPage() {
                         <h3 className="font-semibold">{incident.title}</h3>
                       </div>
                       <div className="text-sm text-gray-500 mt-1">
-                        Started {formatDistanceToNow(new Date(incident.started_at), { addSuffix: true })}
+                        Started {(() => { const d = new Date(incident.started_at); const now = new Date(); const diff = now.getTime() - d.getTime(); const hours = Math.floor(diff / (1000 * 60 * 60)); const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); if (hours > 0) return `${hours}h ago`; if (minutes > 0) return `${minutes}m ago`; return 'just now'; })()}
                       </div>
                     </div>
                     <span className="text-sm font-medium capitalize px-2 py-1 bg-gray-100 rounded">

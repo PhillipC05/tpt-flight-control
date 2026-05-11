@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 
 interface RateLimitData {
   user_id: number;
@@ -102,7 +102,7 @@ export default function RateLimitsPage() {
           <p className="text-gray-500">Current plan: <span className="font-medium">{data.current_plan}</span></p>
         </div>
         <div className="text-sm text-gray-500">
-          Last updated: {lastUpdated && formatDistanceToNow(lastUpdated, { addSuffix: true })}
+          Last updated: {lastUpdated && (() => { const now = new Date(); const diff = now.getTime() - lastUpdated.getTime(); const hours = Math.floor(diff / (1000 * 60 * 60)); const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); if (hours > 0) return `${hours}h ago`; if (minutes > 0) return `${minutes}m ago`; return 'just now'; })()}
         </div>
       </div>
 

@@ -36,33 +36,26 @@ class AuthManager {
   }
 
   private loadStoredAuth() {
-    console.debug('[AuthManager] loadStoredAuth() called');
     const storedToken = localStorage.getItem('auth_token');
     const storedUser = localStorage.getItem('auth_user');
-    console.debug('[AuthManager] localStorage auth_token exists:', !!storedToken, 'auth_user exists:', !!storedUser);
 
     if (storedToken && storedUser) {
       this.token = storedToken;
       try {
         this.user = JSON.parse(storedUser);
-        console.debug('[AuthManager] Loaded user from localStorage:', this.user?.username, 'role:', this.user?.role_name);
       } catch (error) {
         console.error('[AuthManager] Failed to parse stored user data:', error);
         this.logout();
       }
-    } else {
-      console.debug('[AuthManager] No stored auth data found');
     }
   }
 
 
   private saveAuth(token: string, user: User) {
-    console.debug('[AuthManager] saveAuth() called for user:', user.username, 'role:', user.role_name, 'token length:', token.length);
     this.token = token;
     this.user = user;
     localStorage.setItem('auth_token', token);
     localStorage.setItem('auth_user', JSON.stringify(user));
-    console.debug('[AuthManager] Auth data saved to localStorage');
   }
 
 
@@ -74,7 +67,6 @@ class AuthManager {
   }
 
   async login(username: string, password: string): Promise<AuthResponse> {
-    console.debug('[AuthManager] login() called for username:', username);
     try {
       const response = await fetch(`${this.API_BASE}/auth.php?action=login`, {
         method: 'POST',
@@ -83,17 +75,13 @@ class AuthManager {
         },
         body: JSON.stringify({ username, password }),
       });
-      console.debug('[AuthManager] Login response status:', response.status);
 
       const data = await response.json();
-      console.debug('[AuthManager] Login response data success:', data.success, 'has token:', !!data.token, 'has user:', !!data.user);
 
       if (data.success && data.token && data.user) {
         this.saveAuth(data.token, data.user);
-        console.debug('[AuthManager] Login successful, returning success');
         return { success: true, token: data.token, user: data.user };
       } else {
-        console.debug('[AuthManager] Login failed:', data.message || 'Unknown reason');
         return { success: false, message: data.message || 'Login failed' };
       }
     } catch (error) {
@@ -169,26 +157,19 @@ class AuthManager {
   }
 
   logout(): void {
-    console.debug('[AuthManager] logout() called');
     this.clearAuth();
-    // Redirect to login or reload page
     window.location.reload();
   }
 
-
   isAuthenticated(): boolean {
-    const result = this.token !== null && this.user !== null;
-    console.debug('[AuthManager] isAuthenticated() returning:', result, 'token exists:', !!this.token, 'user exists:', !!this.user);
-    return result;
+    return this.token !== null && this.user !== null;
   }
-
 
   getToken(): string | null {
     return this.token;
   }
 
   getUser(): User | null {
-    console.debug('[AuthManager] getUser() returning:', this.user ? `${this.user.username} (${this.user.role_name})` : 'null');
     return this.user;
   }
 
@@ -238,10 +219,8 @@ class AuthManager {
 
     // Handle authentication errors
     if (response.status === 401) {
-      console.warn(`[Auth] 401 on ${url} — attempting token refresh`);
       const refreshed = await this.refreshToken();
       if (refreshed) {
-        console.debug('[Auth] Token refreshed, retrying request');
         headers.set('Authorization', `Bearer ${this.token}`);
         return fetch(url, {
           ...options,
@@ -270,13 +249,11 @@ class AuthManager {
 
   // Check if token is still valid
   async validateToken(): Promise<boolean> {
-    console.debug('[AuthManager] validateToken() called, token exists:', !!this.token);
     if (!this.token) return false;
 
     try {
       const response = await this.authenticatedFetch(`${this.API_BASE}/auth.php?action=validate`);
       const data = await response.json();
-      console.debug('[AuthManager] validateToken() response valid:', data.valid === true);
       return data.valid === true;
     } catch (error) {
       console.error('[AuthManager] Token validation error:', error);
@@ -284,18 +261,14 @@ class AuthManager {
     }
   }
 
-
   // Refresh token if needed
   async refreshToken(): Promise<boolean> {
-    console.debug('[AuthManager] refreshToken() called, token exists:', !!this.token);
     if (!this.token) return false;
 
     try {
-      // Use plain fetch — never authenticatedFetch — to avoid infinite 401 loop
       const response = await fetch(`${this.API_BASE}/auth.php?action=refresh`, {
         headers: { 'Authorization': `Bearer ${this.token}` },
       });
-      console.debug('[AuthManager] refreshToken() response ok:', response.ok);
 
       if (!response.ok) return false;
 
@@ -304,14 +277,12 @@ class AuthManager {
       if (data.success && data.token) {
         this.token = data.token;
         localStorage.setItem('auth_token', data.token);
-        console.debug('[AuthManager] refreshToken() successful, new token saved');
         return true;
       }
     } catch (error) {
       console.error('[AuthManager] Token refresh error:', error);
     }
 
-    console.debug('[AuthManager] refreshToken() failed, returning false');
     return false;
   }
 
@@ -329,50 +300,59 @@ class AuthUI {
 
   renderLoginForm(): void {
     this.container.innerHTML = `
-      <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Flight Control Login</h2>
-
-        <form id="login-form" class="space-y-4">
-          <div>
-            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-            <input type="text" id="username" name="username" required
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input type="password" id="password" name="password" required
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input type="checkbox" id="remember" name="remember"
-                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-              <label for="remember" class="ml-2 block text-sm text-gray-900">Remember me</label>
+      <div class="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+        <div class="w-full max-w-md">
+          <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-8">
+            <div class="flex items-center justify-center gap-3 mb-8">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shrink-0">
+                <span class="text-white font-bold tracking-tight">FC</span>
+              </div>
+              <h2 class="text-xl font-semibold text-slate-100">Flight Control</h2>
             </div>
 
-            <a href="#" id="forgot-password" class="text-sm text-blue-600 hover:text-blue-500">Forgot password?</a>
-          </div>
+            <form id="login-form" class="space-y-5">
+              <div>
+                <label for="username" class="block text-sm font-medium text-slate-300 mb-1.5">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="username"
+                       class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
 
-          <button type="submit"
-                  class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-            <span id="login-text">Sign In</span>
-            <div id="login-spinner" class="hidden ml-2">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div>
+                <label for="password" class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password"
+                       class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <input type="checkbox" id="remember" name="remember"
+                         class="h-4 w-4 bg-slate-700 border-slate-600 rounded text-blue-500 focus:ring-blue-500 focus:ring-offset-0">
+                  <label for="remember" class="ml-2 block text-sm text-slate-400">Remember me</label>
+                </div>
+
+                <a href="#" id="forgot-password" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">Forgot password?</a>
+              </div>
+
+              <button type="submit"
+                      class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                <span id="login-text">Sign In</span>
+                <div id="login-spinner" class="hidden ml-2">
+                  <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                </div>
+              </button>
+            </form>
+
+            <div class="mt-6 text-center">
+              <p class="text-sm text-slate-400">
+                Don't have an account?
+                <a href="#" id="show-register" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">Sign up</a>
+              </p>
             </div>
-          </button>
-        </form>
 
-        <div class="mt-6 text-center">
-          <p class="text-sm text-gray-600">
-            Don't have an account?
-            <a href="#" id="show-register" class="text-blue-600 hover:text-blue-500 font-medium">Sign up</a>
-          </p>
-        </div>
-
-        <div id="message" class="mt-4 hidden">
-          <div id="message-content" class="text-sm"></div>
+            <div id="message" class="mt-4 hidden">
+              <div id="message-content" class="text-sm text-center"></div>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -382,65 +362,74 @@ class AuthUI {
 
   renderRegisterForm(): void {
     this.container.innerHTML = `
-      <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Create Account</h2>
-
-        <form id="register-form" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
-              <input type="text" id="first_name" name="first_name" required
-                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+      <div class="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+        <div class="w-full max-w-md">
+          <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-8">
+            <div class="flex items-center justify-center gap-3 mb-8">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shrink-0">
+                <span class="text-white font-bold tracking-tight">FC</span>
+              </div>
+              <h2 class="text-xl font-semibold text-slate-100">Create Account</h2>
             </div>
-            <div>
-              <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
-              <input type="text" id="last_name" name="last_name" required
-                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+
+            <form id="register-form" class="space-y-5">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label for="first_name" class="block text-sm font-medium text-slate-300 mb-1.5">First Name</label>
+                  <input type="text" id="first_name" name="first_name" required
+                         class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+                </div>
+                <div>
+                  <label for="last_name" class="block text-sm font-medium text-slate-300 mb-1.5">Last Name</label>
+                  <input type="text" id="last_name" name="last_name" required
+                         class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+                </div>
+              </div>
+
+              <div>
+                <label for="reg_username" class="block text-sm font-medium text-slate-300 mb-1.5">Username</label>
+                <input type="text" id="reg_username" name="username" required
+                       class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
+
+              <div>
+                <label for="email" class="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+                <input type="email" id="email" name="email" required
+                       class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
+
+              <div>
+                <label for="reg_password" class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                <input type="password" id="reg_password" name="password" required minlength="8"
+                       class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
+
+              <div>
+                <label for="confirm_password" class="block text-sm font-medium text-slate-300 mb-1.5">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="8"
+                       class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
+
+              <button type="submit"
+                      class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                <span id="register-text">Create Account</span>
+                <div id="register-spinner" class="hidden ml-2">
+                  <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                </div>
+              </button>
+            </form>
+
+            <div class="mt-6 text-center">
+              <p class="text-sm text-slate-400">
+                Already have an account?
+                <a href="#" id="show-login" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">Sign in</a>
+              </p>
+            </div>
+
+            <div id="register-message" class="mt-4 hidden">
+              <div id="register-message-content" class="text-sm text-center"></div>
             </div>
           </div>
-
-          <div>
-            <label for="reg_username" class="block text-sm font-medium text-gray-700">Username</label>
-            <input type="text" id="reg_username" name="username" required
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="email" name="email" required
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <div>
-            <label for="reg_password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input type="password" id="reg_password" name="password" required minlength="8"
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <div>
-            <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-            <input type="password" id="confirm_password" name="confirm_password" required minlength="8"
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <button type="submit"
-                  class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
-            <span id="register-text">Create Account</span>
-            <div id="register-spinner" class="hidden ml-2">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            </div>
-          </button>
-        </form>
-
-        <div class="mt-6 text-center">
-          <p class="text-sm text-gray-600">
-            Already have an account?
-            <a href="#" id="show-login" class="text-blue-600 hover:text-blue-500 font-medium">Sign in</a>
-          </p>
-        </div>
-
-        <div id="register-message" class="mt-4 hidden">
-          <div id="register-message-content" class="text-sm"></div>
         </div>
       </div>
     `;
@@ -450,37 +439,46 @@ class AuthUI {
 
   renderForgotPasswordForm(): void {
     this.container.innerHTML = `
-      <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Reset Password</h2>
-        <p class="text-sm text-gray-600 text-center mb-6">
-          Enter your email address and we'll send you a link to reset your password.
-        </p>
-
-        <form id="forgot-form" class="space-y-4">
-          <div>
-            <label for="reset_email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="reset_email" name="email" required
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
-
-          <button type="submit"
-                  class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-            <span id="reset-text">Send Reset Link</span>
-            <div id="reset-spinner" class="hidden ml-2">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+      <div class="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+        <div class="w-full max-w-md">
+          <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-8">
+            <div class="flex items-center justify-center gap-3 mb-8">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shrink-0">
+                <span class="text-white font-bold tracking-tight">FC</span>
+              </div>
+              <h2 class="text-xl font-semibold text-slate-100">Reset Password</h2>
             </div>
-          </button>
-        </form>
+            <p class="text-sm text-slate-400 text-center mb-6">
+              Enter your email address and we'll send you a link to reset your password.
+            </p>
 
-        <div class="mt-6 text-center">
-          <p class="text-sm text-gray-600">
-            Remember your password?
-            <a href="#" id="back-to-login" class="text-blue-600 hover:text-blue-500 font-medium">Sign in</a>
-          </p>
-        </div>
+            <form id="forgot-form" class="space-y-5">
+              <div>
+                <label for="reset_email" class="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+                <input type="email" id="reset_email" name="email" required
+                       class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
 
-        <div id="reset-message" class="mt-4 hidden">
-          <div id="reset-message-content" class="text-sm"></div>
+              <button type="submit"
+                      class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                <span id="reset-text">Send Reset Link</span>
+                <div id="reset-spinner" class="hidden ml-2">
+                  <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                </div>
+              </button>
+            </form>
+
+            <div class="mt-6 text-center">
+              <p class="text-sm text-slate-400">
+                Remember your password?
+                <a href="#" id="back-to-login" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">Sign in</a>
+              </p>
+            </div>
+
+            <div id="reset-message" class="mt-4 hidden">
+              <div id="reset-message-content" class="text-sm text-center"></div>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -679,9 +677,9 @@ class AuthUI {
 
     content.textContent = message;
     content.className = `text-sm ${
-      type === 'success' ? 'text-green-600' :
-      type === 'error' ? 'text-red-600' :
-      'text-blue-600'
+      type === 'success' ? 'text-emerald-400' :
+      type === 'error' ? 'text-red-400' :
+      'text-blue-400'
     }`;
     container.classList.remove('hidden');
   }

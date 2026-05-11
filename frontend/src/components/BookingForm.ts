@@ -1,66 +1,64 @@
 // Booking Form Component
 export class BookingForm {
   private container: HTMLElement;
-  private onSubmit: (data: any) => void;
 
-  constructor(container: HTMLElement, onSubmit: (data: any) => void) {
+  constructor(container: HTMLElement, _onSubmit: (data: any) => void) {
     this.container = container;
-    this.onSubmit = onSubmit;
   }
 
   render() {
     this.container.innerHTML = `
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Create New Booking</h2>
+      <div class="bg-slate-800 border border-slate-700/60 rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-slate-100 mb-6">Create New Booking</h2>
 
         <form id="booking-form" class="space-y-6">
           <!-- Passenger Selection -->
           <div>
-            <label for="passenger_id" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="passenger_id" class="block text-sm font-medium text-slate-300 mb-2">
               Select Passenger
             </label>
             <select id="passenger_id" name="passenger_id" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               <option value="">Choose a passenger...</option>
             </select>
           </div>
 
           <!-- Flight Selection -->
           <div>
-            <label for="flight_id" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="flight_id" class="block text-sm font-medium text-slate-300 mb-2">
               Select Flight
             </label>
             <select id="flight_id" name="flight_id" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               <option value="">Choose a flight...</option>
             </select>
           </div>
 
           <!-- Seat Selection -->
           <div>
-            <label for="seat_number" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="seat_number" class="block text-sm font-medium text-slate-300 mb-2">
               Seat Number (Optional)
             </label>
             <input type="text" id="seat_number" name="seat_number"
                    placeholder="e.g., 12A"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                   class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
           </div>
 
           <!-- Booking Details -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label for="total_amount" class="block text-sm font-medium text-gray-700 mb-2">
+              <label for="total_amount" class="block text-sm font-medium text-slate-300 mb-2">
                 Total Amount
               </label>
               <input type="number" id="total_amount" name="total_amount" step="0.01" min="0"
-                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                     class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
             <div>
-              <label for="currency" class="block text-sm font-medium text-gray-700 mb-2">
+              <label for="currency" class="block text-sm font-medium text-slate-300 mb-2">
                 Currency
               </label>
               <select id="currency" name="currency"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                      class="w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
                 <option value="GBP">GBP</option>
@@ -69,13 +67,13 @@ export class BookingForm {
           </div>
 
           <!-- Submit Button -->
-          <div class="flex justify-end space-x-3">
+          <div class="flex justify-end gap-3">
             <button type="button" id="cancel-booking"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    class="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-700 rounded-lg hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
               Cancel
             </button>
             <button type="submit"
-                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
               <span id="booking-submit-text">Create Booking</span>
               <div id="booking-spinner" class="hidden ml-2 inline-block">
                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -206,7 +204,7 @@ export class BookingForm {
     if (!container || !content) return;
 
     content.textContent = message;
-    content.className = `text-sm ${type === 'success' ? 'text-green-600' : 'text-red-600'}`;
+    content.className = `text-sm ${type === 'success' ? 'text-emerald-400' : 'text-red-400'}`;
     container.classList.remove('hidden');
   }
 
